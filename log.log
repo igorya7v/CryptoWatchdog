@@ -1,0 +1,3 @@
+error: Error: Error: [ethjs-rpc] rpc error with payload {"id":3992762463476,"jsonrpc":"2.0","params":[{"fromBlock":"0x0","toBlock":"0x552eef","address":"0xa74476443119a942de498590fe1f2454d7d4ac0d","topics":["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",null,null]}],"method":"eth_getLogs"} Error: InfuraProvider - cannot complete request. All retries exhausted.
+Original Error:
+Error: Gateway timeout. The request took too long to process. This can happen when querying logs over too wide a block range.
