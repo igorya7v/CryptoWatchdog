@@ -1,4 +1,3 @@
-/* jshint ignore:start */
 import React from 'react'
 import ReactDOM from 'react-dom'
 import Web3 from 'web3'
@@ -6,7 +5,8 @@ import TruffleContract from 'truffle-contract'
 import GolemNetworkToken from '../../build/contracts/GolemNetworkToken.json'
 import 'bootstrap/dist/css/bootstrap.css'
 import '../css/style.css'
-import HoldersTable from './HoldersTable'
+import ReactTable from "react-table"
+import "react-table/react-table.css"
 import Transactions from './Transactions'
 
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
@@ -17,7 +17,7 @@ const labels = require('../labels')
 
 BigNumber.config({ DECIMAL_PLACES: 2 })
 
-class App extends React.Component {
+class HoldersTable extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
@@ -128,7 +128,8 @@ class App extends React.Component {
                     address: key,
                     quantity: new BigNumber(holders[key].quantity.toString(), 10).toString(),
                     percentage: new BigNumber(((holders[key].quantity / this.state.totalSupply) * 100).toString(), 10).toNumber(),
-                    label: (key in this.labelsMap) ? this.labelsMap[key] : ""
+                    label: (key in this.labelsMap) ? this.labelsMap[key] : "",
+                    linkDest: "/transactions/" + key
                 }
                 temp.push(finalHolders[key])
             }
@@ -136,7 +137,9 @@ class App extends React.Component {
 
         var temp2 = {}
         temp2.data = temp
+        //console.log(temp2)
         this.setState({holdersArray: temp2})
+        //console.log(this.state.holdersArray)
 
 //        Object.keys(this.state.holders).forEach(key => {
 //            console.log(JSON.stringify(this.state.holders[key]))
@@ -151,34 +154,65 @@ class App extends React.Component {
         //<Link to={`/block/${this.state.block_hashes[index]}`}>{this.state.block_hashes[index]}</Link>
     }
 
+  render() {
+    const { data } = this.state.holdersArray;
+    //console.log(data)
+    //var param = this.props.match.params.test;
+    //console.log("******-> " + param);
+    //console.log(this.props)
 
-    render() {
-        return (
+    //<li><Link to="/holders/123">Holders</Link></li>
 
-
-
-                <Router>
-                    <div className="App">
-                        <div className="container">
-                                        <ul>
-                                          <li><Link to="/">Home</Link></li>
-                                          <li><Link to="/transactions/0x123">Holders</Link></li>
-                                        </ul>
-                                        <hr/>
-                                        <Route exact path="/" component={HoldersTable} />
-                                        <Route path="/transactions/:address" component={Transactions} />
-                                    </div>
+    //const { data } = {"data": []};
+    //console.log("####=> " + this.props.holdersArray);
+    //console.log(this.props.holdersArray)
+    return (
+      <div>
+        <li><Link to="/transactions/123">Holders</Link></li>
+        <ReactTable
+          data={data}
+          columns={[
+            {
+              Header: "Test",
+              columns: [
+                {
+                    Header: "Label",
+                    accessor: "label"
+                },
+                {
+                    Header: "Address",
+                    accessor: "address",
+                    Cell: ({row}) => (
+                                <div>
+                                <Link to={row._original.linkDest}>{row.address}</Link>
                                 </div>
-                              </Router>
 
-
-
-
-        )
-    }
+                            )
+                },
+                {
+                    Header: "Quantity",
+                    accessor: "quantity"
+                },
+                {
+                    Header: "Percentage",
+                    accessor: "percentage"
+                }
+              ]
+            }
+          ]}
+          defaultSorted={[
+            {
+              id: "percentage",
+              desc: true
+            }
+          ]}
+          defaultPageSize={10}
+          className="-striped -highlight"
+        />
+      </div>
+    );
+  }
 }
 
-ReactDOM.render(
-   <App />,
-   document.querySelector('#root')
-)
+export default HoldersTable
+
