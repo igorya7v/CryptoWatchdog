@@ -11,7 +11,8 @@ import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
 
 var BigNumber = require('bignumber.js')
 const config = require('../config')
-const labels = require('../labels')
+const labels = require('../labels-config')
+const accountsToSum = require('../sum-config')
 
 BigNumber.config({ DECIMAL_PLACES: 2 })
 
@@ -19,7 +20,9 @@ class HoldersTable extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            labeledData: {}
+            labeledData: {},
+            customSum: "0",
+            customPercentage: 0
         }
 
         if (typeof web3 != 'undefined') {
@@ -36,8 +39,20 @@ class HoldersTable extends React.Component {
         //TODO: fetch from the SM
         this.totalSupply = 1000000000
 
+        this.customSum = "0"
+        this.customPercentage = 0
+
+        this.buildAccountsToSumMap()
         this.buildLabelsMap()
         this.getTokenTransfers()
+    }
+
+    buildAccountsToSumMap(accounts) {
+        console.log("Build Accounts to sum map...")
+        this.accountsToSumMap = {}
+        accountsToSum.forEach(account => {
+            this.accountsToSumMap[account] = account
+        })
     }
 
     buildLabelsMap() {
@@ -113,21 +128,35 @@ class HoldersTable extends React.Component {
 
                 labeledData.data.push(holders[key])
                 console.log("Labeled: " + JSON.stringify(holders[key]))
+
+                if(key in this.accountsToSumMap) {
+                    this.updateCustomSum(holders[key])
+                }
             }
         })
 
         this.setState({labeledData: labeledData})
+        this.setState({customSum: this.customSum})
+        this.setState({customPercentage: this.customPercentage})
         console.log("==> finish <==")
+    }
+
+    updateCustomSum(account) {
+        this.customSum = new BigNumber(this.customSum, 10).plus(new BigNumber(account.quantity), 10).toString()
+        this.customPercentage += account.percentage
     }
 
   render() {
     const { data } = this.state.labeledData
     return (
         <div>
+            <p>Summarized Tokens by config file: <strong>{this.state.customSum}</strong></p>
+            <p>Percentage: <strong>{this.state.customPercentage}%</strong></p>
+            <hr/>
             <ReactTable data={data}
                 columns={[
                     {
-                        Header: "Test",
+                        Header: "Hodlers",
                         columns: [
                             {
                                 Header: "Label",
@@ -147,7 +176,7 @@ class HoldersTable extends React.Component {
                                 accessor: "quantity"
                             },
                             {
-                                Header: "Percentage",
+                                Header: "Percentage (%)",
                                 accessor: "percentage"
                             }
                         ]
@@ -163,7 +192,7 @@ class HoldersTable extends React.Component {
                 className="-striped -highlight"
             />
         </div>
-    );
+    )
   }
 }
 
